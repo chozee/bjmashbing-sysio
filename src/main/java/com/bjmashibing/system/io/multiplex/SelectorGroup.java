@@ -1,11 +1,11 @@
 package com.bjmashibing.system.io.multiplex;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.channels.Channel;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 每个组管理一个服务器关心的FD
@@ -17,28 +17,45 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SelectorGroup {
     private AtomicInteger xid = new AtomicInteger(0);
-    Follower[] fs = null;
+    SelectorThread[] fs = null;
     ServerSocketChannel server = null;
 
+
     public SelectorGroup(int thdNum) {
-        fs = new Follower[thdNum];
+        fs = new SelectorThread[thdNum];
 
         for (int i = 0; i < thdNum; i++) {
-            fs[i] = new Follower();
+            fs[i] = new SelectorThread(this);
+
+            new Thread(fs[i]).start();
         }
+    }
+
+    public void bingServer(int port) throws IOException {
+        server = ServerSocketChannel.open();
+        server.configureBlocking(false);
+        server.bind((new InetSocketAddress(port)));
+
+        SelectorThread next = selectThread();
+
+        server.register(next.selector, SelectionKey.OP_ACCEPT);
     }
 
     /**
      * 把需要关注的FD关联到不同selector线程上
      */
-    public void selector(Channel channel) throws Exception {
-        Follower f = next();
+    public void assignTask(Channel channel) throws Exception {
+        // 负载均衡 按策略选择线程
+        SelectorThread f = selectThread();
 
-        ServerSocketChannel server = (ServerSocketChannel) channel;
-        server.register(f.selector, SelectionKey.OP_ACCEPT);
+        // 线程的任务队列 做业务
+        f.channels.add(channel);
+
+        // 由于线程被select阻塞, 这里如果要做事一定要打断
+        f.selector.wakeup();
     }
 
-    public Follower next() {
+    public SelectorThread selectThread() {
         return fs[xid.incrementAndGet() % fs.length];
     }
 }
