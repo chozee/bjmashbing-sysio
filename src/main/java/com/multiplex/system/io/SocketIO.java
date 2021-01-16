@@ -1,4 +1,4 @@
-package com.bjmashibing.system.io;
+package com.multiplex.system.io;
 
 import java.io.BufferedReader;
 import java.io.IOException;

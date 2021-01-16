@@ -1,4 +1,4 @@
-package com.bjmashibing.system.io.multiplex;
+package com.multiplex.system.io.multiplex;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -121,12 +121,16 @@ public class SelectorThread implements Runnable{
             } else if (num == 0) {
                 break;
             } else {
-
+                System.out.println("cliet break.");
+                key.cancel();
+                break;
             }
         }
     }
 
     public void write(SelectionKey key) {
+        Object attachment = key.attachment();
+
 
     }
 }

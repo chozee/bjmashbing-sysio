@@ -1,4 +1,4 @@
-package com.bjmashibing.system.io;
+package com.multiplex.system.io;
 
 import org.junit.Test;
 import java.io.BufferedOutputStream;
