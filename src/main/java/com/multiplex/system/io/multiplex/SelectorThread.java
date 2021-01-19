@@ -41,15 +41,24 @@ public class SelectorThread implements Runnable{
     public void run() {
         while (true) {
             try {
+                /**
+                 * select
+                 */
                 System.out.println("select before thd:"  + Thread.currentThread().getName() + ", keys count:" + selector.keys().size());
                 int num = selector.select(500l);
                 // 阻塞 如果想做其它事情要被打断才可以, 所以在分配任务的时候记得调用wakeup
                 System.out.println("select after  thd:"  + Thread.currentThread().getName() + ", keys count:" + selector.keys().size());
 
+                /**
+                 *
+                 */
                 if (num > 0) {
                     doEvent();
                 }
 
+                /**
+                 * 注册, server accept events, client read events
+                 */
                 // 处理新分配的channel
                 doAssignChannel();
             } catch (Exception e) {
