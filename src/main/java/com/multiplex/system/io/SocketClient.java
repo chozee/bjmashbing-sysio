@@ -9,10 +9,13 @@ import java.net.Socket;
  */
 public class SocketClient {
 
+    private static String SERV_IP = "10.211.55.103";
+    private static int SERV_port = 9090;
+
     public static void main(String[] args) {
 
         try {
-            Socket client = new Socket("192.168.150.11",9090);
+            Socket client = new Socket(SERV_IP,SERV_port);
 
             client.setSendBufferSize(20);
             client.setTcpNoDelay(true);
